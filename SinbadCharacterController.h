@@ -89,6 +89,11 @@ public:
 		else if (evt.key == OIS::KC_S) mKeyDirection.z = 1;
 		else if (evt.key == OIS::KC_D) mKeyDirection.x = 1;
 
+		else if (evt.key == OIS::KC_UP) mKeyDirection.z = -1;
+		else if (evt.key == OIS::KC_LEFT) mKeyDirection.x = -1;
+		else if (evt.key == OIS::KC_DOWN) mKeyDirection.z = 1;
+		else if (evt.key == OIS::KC_RIGHT) mKeyDirection.x = 1;
+
 		else if (evt.key == OIS::KC_SPACE && (mTopAnimID == ANIM_IDLE_TOP || mTopAnimID == ANIM_RUN_TOP))
 		{
 			// jump if on ground
@@ -112,6 +117,11 @@ public:
 		else if (evt.key == OIS::KC_A && mKeyDirection.x == -1) mKeyDirection.x = 0;
 		else if (evt.key == OIS::KC_S && mKeyDirection.z == 1) mKeyDirection.z = 0;
 		else if (evt.key == OIS::KC_D && mKeyDirection.x == 1) mKeyDirection.x = 0;
+
+		if (evt.key == OIS::KC_UP && mKeyDirection.z == -1) mKeyDirection.z = 0;
+		else if (evt.key == OIS::KC_LEFT && mKeyDirection.x == -1) mKeyDirection.x = 0;
+		else if (evt.key == OIS::KC_DOWN && mKeyDirection.z == 1) mKeyDirection.z = 0;
+		else if (evt.key == OIS::KC_RIGHT && mKeyDirection.x == 1) mKeyDirection.x = 0;
 
 		if (mKeyDirection.isZeroLength() && mBaseAnimID == ANIM_RUN_BASE)
 		{
