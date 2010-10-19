@@ -41,7 +41,7 @@ protected:
 
 public:
 
-    CharacterController(Camera* cam, std::string name, std::vector<SceneNode*> bodyNodeVector, std::vector<Entity*> bodyEntVector);
+    CharacterController(Camera* cam, std::string name, std::vector<SceneNode*> bodyNodeVector, std::vector<Entity*> bodyEntVector, int myElementInVector);
     ~CharacterController();
 
 	void addTime(Real deltaTime);

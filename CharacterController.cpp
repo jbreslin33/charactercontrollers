@@ -91,9 +91,9 @@ CharacterController::CharacterController(Camera* cam,std::string name, std::vect
 	void CharacterController::setupBody(SceneManager* sceneMgr)
 	{
 		// create main model
-		mBodyNode = sceneMgr->getRootSceneNode()->createChildSceneNode(Vector3::UNIT_Y * CHAR_HEIGHT);
-		mBodyEnt  = sceneMgr->createEntity(mName, "Sinbad.mesh");
-		mBodyNode->attachObject(mBodyEnt);
+		mBodyNodeVector.at(mMyElementInVector) = sceneMgr->getRootSceneNode()->createChildSceneNode(Vector3::UNIT_Y * CHAR_HEIGHT);
+		mBodyEntVector.at(mMyElementInVector)  = sceneMgr->createEntity(mName, "Sinbad.mesh");
+		mBodyNodeVector.at(mMyElementInVector)->attachObject(mBodyEntVector.at(mMyElementInVector));
 
         mKeyDirection = Vector3::ZERO;
 		mVerticalVelocity = 0;
@@ -102,7 +102,7 @@ CharacterController::CharacterController(Camera* cam,std::string name, std::vect
 	void CharacterController::setupAnimations()
 	{
 		// this is very important due to the nature of the exported animations
-		mBodyEnt->getSkeleton()->setBlendMode(ANIMBLEND_CUMULATIVE);
+		mBodyEntVector.at(mMyElementInVector)->getSkeleton()->setBlendMode(ANIMBLEND_CUMULATIVE);
 
 		String animNames[] =
 		{"IdleBase", "IdleTop", "RunBase", "RunTop", "HandsClosed", "HandsRelaxed", "DrawSwords",
@@ -111,7 +111,7 @@ CharacterController::CharacterController(Camera* cam,std::string name, std::vect
 		// populate our animation list
 		for (int i = 0; i < NUM_ANIMS; i++)
 		{
-			mAnims[i] = mBodyEnt->getAnimationState(animNames[i]);
+			mAnims[i] = mBodyEntVector.at(mMyElementInVector)->getAnimationState(animNames[i]);
 			mAnims[i]->setLoop(true);
 			mFadingIn[i] = false;
 			mFadingOut[i] = false;
@@ -160,7 +160,7 @@ CharacterController::CharacterController(Camera* cam,std::string name, std::vect
 			mGoalDirection.y = 0;
 			mGoalDirection.normalise();
 
-			Quaternion toGoal = mBodyNode->getOrientation().zAxis().getRotationTo(mGoalDirection);
+			Quaternion toGoal = mBodyNodeVector.at(mMyElementInVector)->getOrientation().zAxis().getRotationTo(mGoalDirection);
 
 			// calculate how much the character has to turn to face goal direction
 			Real yawToGoal = toGoal.getYaw().valueDegrees();
@@ -173,7 +173,7 @@ CharacterController::CharacterController(Camera* cam,std::string name, std::vect
 			if (yawToGoal < 0) yawToGoal = std::min<Real>(0, std::max<Real>(yawToGoal, yawAtSpeed)); //yawToGoal = Math::Clamp<Real>(yawToGoal, yawAtSpeed, 0);
 			else if (yawToGoal > 0) yawToGoal = std::max<Real>(0, std::min<Real>(yawToGoal, yawAtSpeed)); //yawToGoal = Math::Clamp<Real>(yawToGoal, 0, yawAtSpeed);
 
-			mBodyNode->yaw(Degree(yawToGoal));
+			mBodyNodeVector.at(mMyElementInVector)->yaw(Degree(yawToGoal));
 
 			// move in current body direction (not the goal direction)
 			mBodyNode->translate(0, 0, deltaTime * mRunSpeed * mAnims[mBaseAnimID]->getWeight(),
