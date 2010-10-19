@@ -1,7 +1,12 @@
 #include "CharacterController.h"
 
-CharacterController::CharacterController(Camera* cam,std::string name)
+CharacterController::CharacterController(Camera* cam,std::string name, std::vector<SceneNode*> bodyNodeVector, std::vector<Entity*> bodyEntVector, int myElementInVector)
 {
+
+    mMyElementInVector = myElementInVector;
+    mBodyNodeVector    = bodyNodeVector;
+	mBodyEntVector     = bodyEntVector;
+
     mName = name;
     mRunSpeed = 17;
 	setupBody(cam->getSceneManager());
@@ -87,9 +92,8 @@ CharacterController::CharacterController(Camera* cam,std::string name)
 	{
 		// create main model
 		mBodyNode = sceneMgr->getRootSceneNode()->createChildSceneNode(Vector3::UNIT_Y * CHAR_HEIGHT);
-		mBodyEnt = sceneMgr->createEntity(mName, "Sinbad.mesh");
+		mBodyEnt  = sceneMgr->createEntity(mName, "Sinbad.mesh");
 		mBodyNode->attachObject(mBodyEnt);
-
 
         mKeyDirection = Vector3::ZERO;
 		mVerticalVelocity = 0;

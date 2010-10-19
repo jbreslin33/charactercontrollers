@@ -41,7 +41,7 @@ protected:
 
 public:
 
-	CharacterController(Camera* cam,std::string name);
+    CharacterController(Camera* cam, std::string name, std::vector<SceneNode*> bodyNodeVector, std::vector<Entity*> bodyEntVector);
     ~CharacterController();
 
 	void addTime(Real deltaTime);
@@ -74,26 +74,32 @@ public:
 	void setBaseAnimation(AnimID id, bool reset = false);
 
 protected:
+
     std::string mName;
 	Camera* mCamera;
-	SceneNode* mBodyNode;
+
 	SceneNode* mCameraPivot;
 	SceneNode* mCameraGoal;
 	SceneNode* mCameraNode;
 	Real mPivotPitch;
-	Entity* mBodyEnt;
+
 	AnimationState* mAnims[NUM_ANIMS];    // master animation list
 	AnimID mBaseAnimID;                   // current base (full- or lower-body) animation
 	AnimID mTopAnimID;                    // current top (upper-body) animation
 	bool mFadingIn[NUM_ANIMS];            // which animations are fading in
 	bool mFadingOut[NUM_ANIMS];           // which animations are fading out
-	bool mSwordsDrawn;
 
 	Vector3 mGoalDirection;     // actual intended direction in world-space
 	Real mVerticalVelocity;     // for jumping
 	Real mTimer;                // general timer to see how long animations have been playing
 	Real mRunSpeed;
 	Vector3 mKeyDirection;      // player's local intended direction based on WASD keys
+
+public:
+	std::vector<SceneNode*> mBodyNodeVector;
+	std::vector<Entity*>    mBodyEntVector;
+
+	int mMyElementInVector;
 
 
 
