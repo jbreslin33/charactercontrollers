@@ -16,7 +16,7 @@ using namespace Ogre;
 
 class SinbadCharacterController
 {
-private:
+protected:
 
 	// all the animations our character has, and a null ID
 	// some of these affect separate body parts and will be blended together
@@ -40,8 +40,9 @@ private:
 
 public:
 
-	SinbadCharacterController(Camera* cam)
+	SinbadCharacterController(Camera* cam,std::string name)
 	{
+	    mName = name;
 	    mRunSpeed = 17;
 		setupBody(cam->getSceneManager());
 		setupCamera(cam);
@@ -172,12 +173,12 @@ private:
 	{
 		// create main model
 		mBodyNode = sceneMgr->getRootSceneNode()->createChildSceneNode(Vector3::UNIT_Y * CHAR_HEIGHT);
-		mBodyEnt = sceneMgr->createEntity("SinbadBody", "Sinbad.mesh");
+		mBodyEnt = sceneMgr->createEntity(mName, "Sinbad.mesh");
 		mBodyNode->attachObject(mBodyEnt);
 
 		// create swords and attach to sheath
-		mSword1 = sceneMgr->createEntity("SinbadSword1", "Sword.mesh");
-		mSword2 = sceneMgr->createEntity("SinbadSword2", "Sword.mesh");
+		mSword1 = sceneMgr->createEntity(mName.append("SinbadSword1"), "Sword.mesh");
+		mSword2 = sceneMgr->createEntity(mName.append("SinbadSword2"), "Sword.mesh");
 		mBodyEnt->attachObjectToBone("Sheath.L", mSword1);
 		mBodyEnt->attachObjectToBone("Sheath.R", mSword2);
 
@@ -185,7 +186,7 @@ private:
 		NameValuePairList params;
 		params["numberOfChains"] = "2";
 		params["maxElements"] = "80";
-		mSwordTrail = (RibbonTrail*)sceneMgr->createMovableObject("RibbonTrail", &params);
+		mSwordTrail = (RibbonTrail*)sceneMgr->createMovableObject(mName.append("RibbonTrail"), &params);
 		mSwordTrail->setMaterialName("Examples/LightRibbonTrail");
 		mSwordTrail->setTrailLength(20);
 		mSwordTrail->setVisible(false);
@@ -465,27 +466,7 @@ private:
 		}
 	}
 
-	void setBaseAnimation(AnimID id, bool reset = false)
-	{
-		if (mBaseAnimID >= 0 && mBaseAnimID < NUM_ANIMS)
-		{
-			// if we have an old animation, fade it out
-			mFadingIn[mBaseAnimID] = false;
-			mFadingOut[mBaseAnimID] = true;
-		}
 
-		mBaseAnimID = id;
-
-		if (id != ANIM_NONE)
-		{
-			// if we have a new animation, enable it and fade it in
-			mAnims[id]->setEnabled(true);
-			mAnims[id]->setWeight(0);
-			mFadingOut[id] = false;
-			mFadingIn[id] = true;
-			if (reset) mAnims[id]->setTimePosition(0);
-		}
-	}
 
 	void setTopAnimation(AnimID id, bool reset = false)
 	{
@@ -514,6 +495,7 @@ private:
 		mRunSpeed = runSpeed;
 	}
 
+    std::string mName;
 	Camera* mCamera;
 	SceneNode* mBodyNode;
 	SceneNode* mCameraPivot;
@@ -530,11 +512,36 @@ private:
 	bool mFadingIn[NUM_ANIMS];            // which animations are fading in
 	bool mFadingOut[NUM_ANIMS];           // which animations are fading out
 	bool mSwordsDrawn;
-	Vector3 mKeyDirection;      // player's local intended direction based on WASD keys
+
 	Vector3 mGoalDirection;     // actual intended direction in world-space
 	Real mVerticalVelocity;     // for jumping
 	Real mTimer;                // general timer to see how long animations have been playing
 	Real mRunSpeed;
+
+	protected:
+		Vector3 mKeyDirection;      // player's local intended direction based on WASD keys
+
+	void setBaseAnimation(AnimID id, bool reset = false)
+	{
+		if (mBaseAnimID >= 0 && mBaseAnimID < NUM_ANIMS)
+		{
+			// if we have an old animation, fade it out
+			mFadingIn[mBaseAnimID] = false;
+			mFadingOut[mBaseAnimID] = true;
+		}
+
+		mBaseAnimID = id;
+
+		if (id != ANIM_NONE)
+		{
+			// if we have a new animation, enable it and fade it in
+			mAnims[id]->setEnabled(true);
+			mAnims[id]->setWeight(0);
+			mFadingOut[id] = false;
+			mFadingIn[id] = true;
+			if (reset) mAnims[id]->setTimePosition(0);
+		}
+	}
 };
 
 #endif

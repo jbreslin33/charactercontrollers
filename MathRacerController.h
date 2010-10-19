@@ -14,8 +14,14 @@ class MathRacerController : public SinbadCharacterController
 
 public:
 
-	MathRacerController(Camera* cam) : SinbadCharacterController(cam)
+	MathRacerController(Camera* cam,std::string name) : SinbadCharacterController(cam,name)
 	{
+	}
+
+	void run()
+	{
+        mKeyDirection.z = -1;
+        setBaseAnimation(ANIM_RUN_BASE, true);
 	}
 };
 
