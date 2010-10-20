@@ -91,6 +91,8 @@ CharacterController::CharacterController(Camera* cam)
         mBodyEnt  = sceneMgr->createEntity("SinbadBody", "Sinbad.mesh");
         mBodyNode->attachObject(mBodyEnt);
 
+        mBodyNode->translate(0, 0, -120, Node::TS_LOCAL);
+
         mKeyDirection = Vector3::ZERO;
 		mVerticalVelocity = 0;
 	}
