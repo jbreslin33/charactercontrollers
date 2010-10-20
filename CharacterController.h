@@ -41,7 +41,7 @@ protected:
 
 public:
 
-    CharacterController(Camera* cam, std::string name, std::vector<SceneNode*> bodyNodeVector, std::vector<Entity*> bodyEntVector, int myElementInVector);
+    CharacterController(Camera* cam);
     ~CharacterController();
 
 	void addTime(Real deltaTime);
@@ -77,7 +77,7 @@ protected:
 
     std::string mName;
 	Camera* mCamera;
-
+    SceneNode* mBodyNode;
 	SceneNode* mCameraPivot;
 	SceneNode* mCameraGoal;
 	SceneNode* mCameraNode;
@@ -96,8 +96,8 @@ protected:
 	Vector3 mKeyDirection;      // player's local intended direction based on WASD keys
 
 public:
-	std::vector<SceneNode*> mBodyNodeVector;
-	std::vector<Entity*>    mBodyEntVector;
+
+	Entity*    mBodyEnt;
 
 	int mMyElementInVector;
 
