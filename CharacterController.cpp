@@ -86,15 +86,27 @@ CharacterController::CharacterController(Camera* cam)
 
 	void CharacterController::setupBody(SceneManager* sceneMgr)
 	{
-		// create main model
-        mBodyNode = sceneMgr->getRootSceneNode()->createChildSceneNode(Vector3::UNIT_Y * CHAR_HEIGHT);
-        mBodyEnt  = sceneMgr->createEntity("SinbadBody", "Sinbad.mesh");
-        mBodyNode->attachObject(mBodyEnt);
+		//SceneNode* sn = NULL;
+		//Entity* ent = NULL;
 
-        mBodyNode->translate(0, 0, -120, Node::TS_LOCAL);
+		mBodyEnt = NULL;
+		mBodyNode = NULL;
 
-        mKeyDirection = Vector3::ZERO;
-		mVerticalVelocity = 0;
+        for (int i = 0; i < 3; i++)
+        {
+            // create main model
+            mBodyNode = sceneMgr->getRootSceneNode()->createChildSceneNode(Vector3::UNIT_Y * CHAR_HEIGHT);
+
+			mModelNodes.push_back(mBodyNode);
+
+            mBodyEnt  = sceneMgr->createEntity("SinbadBody", "Sinbad.mesh");
+            mBodyNode->attachObject(mBodyEnt);
+
+            mBodyNode->translate(0, 0, -120, Node::TS_LOCAL);
+
+            mKeyDirection = Vector3::ZERO;
+            mVerticalVelocity = 0;
+        }
 	}
 
 	void CharacterController::setupAnimations()

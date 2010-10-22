@@ -77,7 +77,7 @@ protected:
 
     std::string mName;
 	Camera* mCamera;
-    SceneNode* mBodyNode;
+
 	SceneNode* mCameraPivot;
 	SceneNode* mCameraGoal;
 	SceneNode* mCameraNode;
@@ -97,11 +97,16 @@ protected:
 
 public:
 
+
+	std::vector<SceneNode*> mModelNodes;
+
 	Entity*    mBodyEnt;
+    SceneNode* mBodyNode;
 
-	int mMyElementInVector;
+    //std::vector<Entity*> mBodyEntVec;
+	//std::vector<SceneNode*> mBodyNodeVec;
 
-
+    int mMyElementInVector;
 
 };
 
