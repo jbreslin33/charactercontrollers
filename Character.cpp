@@ -1,25 +1,22 @@
-
 #include "Character.h"
 
-    Character::Character(Camera* cam, int numberOfCharacters, std::vector<std::string> names, std::vector<std::string> meshes)
+Character::Character(Camera* cam)
 {
-    mNames              = names;
-    mMeshes             = meshes;
-    mNumberOfCharacters = numberOfCharacters;
+    mCamera = cam;
 
-	setupBody(cam->getSceneManager());
+	//setupBody(cam->getSceneManager());
 }
 
-	void Character::setupBody(SceneManager* sceneMgr)
+	void Character::setupBody()
 	{
-        for (int i = 0; i < mNumberOfCharacters; i++)
+        for (int i = 0; i < 1; i++)
         {
             // create main model
-            mBodyNodes.push_back(sceneMgr->getRootSceneNode()->createChildSceneNode(Vector3::UNIT_Y * CHAR_HEIGHT));
+            mBodyNodes.push_back(mCamera->getSceneManager()->getRootSceneNode()->createChildSceneNode(Vector3::UNIT_Y * CHAR_HEIGHT));
 
 			mModelNodes.push_back(mBodyNodes.at(i));
 
-            mBodyEnts.push_back(sceneMgr->createEntity("SinbadBody" + StringConverter::toString(i + 1), "Sinbad.mesh"));
+            mBodyEnts.push_back(mCamera->getSceneManager()->createEntity("SinbadBody" + StringConverter::toString(i + 1), "Sinbad.mesh"));
             mBodyNodes.at(i)->attachObject(mBodyEnts.at(i));
 
             mBodyNodes.at(i)->translate(10 * i, 0, -10  * i, Node::TS_LOCAL);

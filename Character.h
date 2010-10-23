@@ -13,10 +13,10 @@ class Character
 
 public:
 
-    Character(Camera* cam, int numberOfCharacters, std::vector<std::string> names,	std::vector<std::string> meshes);
+    Character(Camera* cam);
     ~Character();
 
-	void setupBody(SceneManager* sceneMgr);
+	void setupBody();
 
 protected:
 
@@ -28,7 +28,7 @@ protected:
 	std::vector<std::string*> mNames;
 	std::vector<std::string*> mMeshes;
 
-    int mNumberOfCharacters;
+
 
 };
 
