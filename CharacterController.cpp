@@ -1,35 +1,101 @@
-#include "CharacterController.h"
+#ifndef __Sinbad_H__
+#define __Sinbad_H__
 
-CharacterController::CharacterController(Camera* cam)
+#include "Ogre.h"
+#include "OIS.h"
+
+using namespace Ogre;
+
+#define NUM_ANIMS 13           // number of animations the character has
+#define CHAR_HEIGHT 5          // height of character's center of mass above ground
+#define CAM_HEIGHT 2           // height of camera above character's center of mass
+#define RUN_SPEED 17           // character running speed in units per second
+#define TURN_SPEED 500.0f      // character turning in degrees per second
+#define ANIM_FADE_SPEED 7.5f   // animation crossfade speed in % of full weight per second
+#define JUMP_ACCEL 30.0f       // character jump acceleration in upward units per squared second
+#define GRAVITY 90.0f          // gravity in downward units per squared second
+
+class SinbadCharacterController
 {
+private:
 
-    //mName = name;
-    mRunSpeed = 17;
-	setupBody(cam->getSceneManager());
-	setupCamera(cam);
-	setupAnimations();
-}
+	// all the animations our character has, and a null ID
+	// some of these affect separate body parts and will be blended together
+	enum AnimID
+	{
+		ANIM_IDLE_BASE,
+		ANIM_IDLE_TOP,
+		ANIM_RUN_BASE,
+		ANIM_RUN_TOP,
+		ANIM_HANDS_CLOSED,
+		ANIM_HANDS_RELAXED,
+		ANIM_DRAW_SWORDS,
+		ANIM_SLICE_VERTICAL,
+		ANIM_SLICE_HORIZONTAL,
+		ANIM_DANCE,
+		ANIM_JUMP_START,
+		ANIM_JUMP_LOOP,
+		ANIM_JUMP_END,
+		ANIM_NONE
+	};
 
-	void CharacterController::addTime(Real deltaTime)
+public:
+
+	SinbadCharacterController(Camera* cam)
+	{
+		setupBody(cam->getSceneManager());
+		setupCamera(cam);
+		setupAnimations();
+	}
+
+	void addTime(Real deltaTime)
 	{
 		updateBody(deltaTime);
 		updateAnimations(deltaTime);
 		updateCamera(deltaTime);
 	}
 
-	void CharacterController::injectKeyDown(const OIS::KeyEvent& evt)
+	void injectKeyDown(const OIS::KeyEvent& evt)
 	{
+		if (evt.key == OIS::KC_Q && (mTopAnimID == ANIM_IDLE_TOP || mTopAnimID == ANIM_RUN_TOP))
+		{
+			// take swords out (or put them back, since it's the same animation but reversed)
+			setTopAnimation(ANIM_DRAW_SWORDS, true);
+			mTimer = 0;
+		}
+		else if (evt.key == OIS::KC_E && !mSwordsDrawn)
+		{
+			if (mTopAnimID == ANIM_IDLE_TOP || mTopAnimID == ANIM_RUN_TOP)
+			{
+				// start dancing
+				setBaseAnimation(ANIM_DANCE, true);
+				setTopAnimation(ANIM_NONE);
+				// disable hand animation because the dance controls hands
+				mAnims[ANIM_HANDS_RELAXED]->setEnabled(false);
+			}
+			else if (mBaseAnimID == ANIM_DANCE)
+			{
+				// stop dancing
+				setBaseAnimation(ANIM_IDLE_BASE);
+				setTopAnimation(ANIM_IDLE_TOP);
+				// re-enable hand animation
+				mAnims[ANIM_HANDS_RELAXED]->setEnabled(true);
+			}
+		}
 
 		// keep track of the player's intended direction
-		if (evt.key == OIS::KC_W) mKeyDirection.z = -1;
+		else if (evt.key == OIS::KC_W) mKeyDirection.z = -1;
 		else if (evt.key == OIS::KC_A) mKeyDirection.x = -1;
 		else if (evt.key == OIS::KC_S) mKeyDirection.z = 1;
 		else if (evt.key == OIS::KC_D) mKeyDirection.x = 1;
 
-		else if (evt.key == OIS::KC_UP) mKeyDirection.z = -1;
-		else if (evt.key == OIS::KC_LEFT) mKeyDirection.x = -1;
-		else if (evt.key == OIS::KC_DOWN) mKeyDirection.z = 1;
-		else if (evt.key == OIS::KC_RIGHT) mKeyDirection.x = 1;
+		else if (evt.key == OIS::KC_SPACE && (mTopAnimID == ANIM_IDLE_TOP || mTopAnimID == ANIM_RUN_TOP))
+		{
+			// jump if on ground
+			setBaseAnimation(ANIM_JUMP_START, true);
+			setTopAnimation(ANIM_NONE);
+			mTimer = 0;
+		}
 
 		if (!mKeyDirection.isZeroLength() && mBaseAnimID == ANIM_IDLE_BASE)
 		{
@@ -39,18 +105,13 @@ CharacterController::CharacterController(Camera* cam)
 		}
 	}
 
-	void CharacterController::injectKeyUp(const OIS::KeyEvent& evt)
+	void injectKeyUp(const OIS::KeyEvent& evt)
 	{
 		// keep track of the player's intended direction
 		if (evt.key == OIS::KC_W && mKeyDirection.z == -1) mKeyDirection.z = 0;
 		else if (evt.key == OIS::KC_A && mKeyDirection.x == -1) mKeyDirection.x = 0;
 		else if (evt.key == OIS::KC_S && mKeyDirection.z == 1) mKeyDirection.z = 0;
 		else if (evt.key == OIS::KC_D && mKeyDirection.x == 1) mKeyDirection.x = 0;
-
-		if (evt.key == OIS::KC_UP && mKeyDirection.z == -1) mKeyDirection.z = 0;
-		else if (evt.key == OIS::KC_LEFT && mKeyDirection.x == -1) mKeyDirection.x = 0;
-		else if (evt.key == OIS::KC_DOWN && mKeyDirection.z == 1) mKeyDirection.z = 0;
-		else if (evt.key == OIS::KC_RIGHT && mKeyDirection.x == 1) mKeyDirection.x = 0;
 
 		if (mKeyDirection.isZeroLength() && mBaseAnimID == ANIM_RUN_BASE)
 		{
@@ -61,55 +122,79 @@ CharacterController::CharacterController(Camera* cam)
 	}
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_IPHONE
-	void CharacterController::injectMouseMove(const OIS::MultiTouchEvent& evt)
+	void injectMouseMove(const OIS::MultiTouchEvent& evt)
 	{
 		// update camera goal based on mouse movement
 		updateCameraGoal(-0.05f * evt.state.X.rel, -0.05f * evt.state.Y.rel, -0.0005f * evt.state.Z.rel);
 	}
 
-	void CharacterController::injectMouseDown(const OIS::MultiTouchEvent& evt)
+	void injectMouseDown(const OIS::MultiTouchEvent& evt)
 	{
-
+		if (mSwordsDrawn && (mTopAnimID == ANIM_IDLE_TOP || mTopAnimID == ANIM_RUN_TOP))
+		{
+			// if swords are out, and character's not doing something weird, then SLICE!
+            setTopAnimation(ANIM_SLICE_VERTICAL, true);
+			mTimer = 0;
+		}
 	}
 #else
-	void CharacterController::injectMouseMove(const OIS::MouseEvent& evt)
+	void injectMouseMove(const OIS::MouseEvent& evt)
 	{
 		// update camera goal based on mouse movement
 		updateCameraGoal(-0.05f * evt.state.X.rel, -0.05f * evt.state.Y.rel, -0.0005f * evt.state.Z.rel);
 	}
 
-	void CharacterController::injectMouseDown(const OIS::MouseEvent& evt, OIS::MouseButtonID id)
+	void injectMouseDown(const OIS::MouseEvent& evt, OIS::MouseButtonID id)
 	{
-
+		if (mSwordsDrawn && (mTopAnimID == ANIM_IDLE_TOP || mTopAnimID == ANIM_RUN_TOP))
+		{
+			// if swords are out, and character's not doing something weird, then SLICE!
+			if (id == OIS::MB_Left) setTopAnimation(ANIM_SLICE_VERTICAL, true);
+			else if (id == OIS::MB_Right) setTopAnimation(ANIM_SLICE_HORIZONTAL, true);
+			mTimer = 0;
+		}
 	}
 #endif
 
-	void CharacterController::setupBody(SceneManager* sceneMgr)
+private:
+
+	void setupBody(SceneManager* sceneMgr)
 	{
-		//SceneNode* sn = NULL;
-		//Entity* ent = NULL;
+		// create main model
+		mBodyNode = sceneMgr->getRootSceneNode()->createChildSceneNode(Vector3::UNIT_Y * CHAR_HEIGHT);
+		mBodyEnt = sceneMgr->createEntity("SinbadBody", "Sinbad.mesh");
+		mBodyNode->attachObject(mBodyEnt);
 
-		mBodyEnt = NULL;
-		mBodyNode = NULL;
+		// create swords and attach to sheath
+		mSword1 = sceneMgr->createEntity("SinbadSword1", "Sword.mesh");
+		mSword2 = sceneMgr->createEntity("SinbadSword2", "Sword.mesh");
+		mBodyEnt->attachObjectToBone("Sheath.L", mSword1);
+		mBodyEnt->attachObjectToBone("Sheath.R", mSword2);
 
-        for (int i = 0; i < 3; i++)
-        {
-            // create main model
-            mBodyNode = sceneMgr->getRootSceneNode()->createChildSceneNode(Vector3::UNIT_Y * CHAR_HEIGHT);
+		// create a couple of ribbon trails for the swords, just for fun
+		NameValuePairList params;
+		params["numberOfChains"] = "2";
+		params["maxElements"] = "80";
+		mSwordTrail = (RibbonTrail*)sceneMgr->createMovableObject("RibbonTrail", &params);
+		mSwordTrail->setMaterialName("Examples/LightRibbonTrail");
+		mSwordTrail->setTrailLength(20);
+		mSwordTrail->setVisible(false);
+		sceneMgr->getRootSceneNode()->attachObject(mSwordTrail);
 
-			mModelNodes.push_back(mBodyNode);
 
-            mBodyEnt  = sceneMgr->createEntity("SinbadBody", "Sinbad.mesh");
-            mBodyNode->attachObject(mBodyEnt);
+		for (int i = 0; i < 2; i++)
+		{
+			mSwordTrail->setInitialColour(i, 1, 0.8, 0);
+			mSwordTrail->setColourChange(i, 0.75, 1.25, 1.25, 1.25);
+			mSwordTrail->setWidthChange(i, 1);
+			mSwordTrail->setInitialWidth(i, 0.5);
+		}
 
-            mBodyNode->translate(0, 0, -120, Node::TS_LOCAL);
-
-            mKeyDirection = Vector3::ZERO;
-            mVerticalVelocity = 0;
-        }
+		mKeyDirection = Vector3::ZERO;
+		mVerticalVelocity = 0;
 	}
 
-	void CharacterController::setupAnimations()
+	void setupAnimations()
 	{
 		// this is very important due to the nature of the exported animations
 		mBodyEnt->getSkeleton()->setBlendMode(ANIMBLEND_CUMULATIVE);
@@ -134,9 +219,10 @@ CharacterController::CharacterController(Camera* cam)
 		// relax the hands since we're not holding anything
 		mAnims[ANIM_HANDS_RELAXED]->setEnabled(true);
 
+		mSwordsDrawn = false;
 	}
 
-	void CharacterController::setupCamera(Camera* cam)
+	void setupCamera(Camera* cam)
 	{
 		// create a pivot at roughly the character's shoulder
 		mCameraPivot = cam->getSceneManager()->getRootSceneNode()->createChildSceneNode();
@@ -152,13 +238,13 @@ CharacterController::CharacterController(Camera* cam)
 
 		// our model is quite small, so reduce the clipping planes
 		cam->setNearClipDistance(0.1);
-		cam->setFarClipDistance(200);
+		cam->setFarClipDistance(100);
 		mCameraNode->attachObject(cam);
 
 		mPivotPitch = 0;
 	}
 
-	void CharacterController::updateBody(Real deltaTime)
+	void updateBody(Real deltaTime)
 	{
 		mGoalDirection = Vector3::ZERO;   // we will calculate this
 
@@ -186,7 +272,7 @@ CharacterController::CharacterController(Camera* cam)
 			mBodyNode->yaw(Degree(yawToGoal));
 
 			// move in current body direction (not the goal direction)
-			mBodyNode->translate(0, 0, deltaTime * mRunSpeed * mAnims[mBaseAnimID]->getWeight(),
+			mBodyNode->translate(0, 0, deltaTime * RUN_SPEED * mAnims[mBaseAnimID]->getWeight(),
 				Node::TS_LOCAL);
 		}
 
@@ -208,12 +294,100 @@ CharacterController::CharacterController(Camera* cam)
 		}
 	}
 
-	void CharacterController::updateAnimations(Real deltaTime)
+	void updateAnimations(Real deltaTime)
 	{
 		Real baseAnimSpeed = 1;
 		Real topAnimSpeed = 1;
 
 		mTimer += deltaTime;
+
+		if (mTopAnimID == ANIM_DRAW_SWORDS)
+		{
+			// flip the draw swords animation if we need to put it back
+			topAnimSpeed = mSwordsDrawn ? -1 : 1;
+
+			// half-way through the animation is when the hand grasps the handles...
+			if (mTimer >= mAnims[mTopAnimID]->getLength() / 2 &&
+				mTimer - deltaTime < mAnims[mTopAnimID]->getLength() / 2)
+			{
+				// so transfer the swords from the sheaths to the hands
+				mBodyEnt->detachAllObjectsFromBone();
+				mBodyEnt->attachObjectToBone(mSwordsDrawn ? "Sheath.L" : "Handle.L", mSword1);
+				mBodyEnt->attachObjectToBone(mSwordsDrawn ? "Sheath.R" : "Handle.R", mSword2);
+				// change the hand state to grab or let go
+				mAnims[ANIM_HANDS_CLOSED]->setEnabled(!mSwordsDrawn);
+				mAnims[ANIM_HANDS_RELAXED]->setEnabled(mSwordsDrawn);
+
+				// toggle sword trails
+				if (mSwordsDrawn)
+				{
+					mSwordTrail->setVisible(false);
+					mSwordTrail->removeNode(mSword1->getParentNode());
+					mSwordTrail->removeNode(mSword2->getParentNode());
+				}
+				else
+				{
+					mSwordTrail->setVisible(true);
+					mSwordTrail->addNode(mSword1->getParentNode());
+					mSwordTrail->addNode(mSword2->getParentNode());
+				}
+			}
+
+			if (mTimer >= mAnims[mTopAnimID]->getLength())
+			{
+				// animation is finished, so return to what we were doing before
+				if (mBaseAnimID == ANIM_IDLE_BASE) setTopAnimation(ANIM_IDLE_TOP);
+				else
+				{
+					setTopAnimation(ANIM_RUN_TOP);
+					mAnims[ANIM_RUN_TOP]->setTimePosition(mAnims[ANIM_RUN_BASE]->getTimePosition());
+				}
+				mSwordsDrawn = !mSwordsDrawn;
+			}
+		}
+		else if (mTopAnimID == ANIM_SLICE_VERTICAL || mTopAnimID == ANIM_SLICE_HORIZONTAL)
+		{
+			if (mTimer >= mAnims[mTopAnimID]->getLength())
+			{
+				// animation is finished, so return to what we were doing before
+				if (mBaseAnimID == ANIM_IDLE_BASE) setTopAnimation(ANIM_IDLE_TOP);
+				else
+				{
+					setTopAnimation(ANIM_RUN_TOP);
+					mAnims[ANIM_RUN_TOP]->setTimePosition(mAnims[ANIM_RUN_BASE]->getTimePosition());
+				}
+			}
+
+			// don't sway hips from side to side when slicing. that's just embarrasing.
+			if (mBaseAnimID == ANIM_IDLE_BASE) baseAnimSpeed = 0;
+		}
+		else if (mBaseAnimID == ANIM_JUMP_START)
+		{
+			if (mTimer >= mAnims[mBaseAnimID]->getLength())
+			{
+				// takeoff animation finished, so time to leave the ground!
+				setBaseAnimation(ANIM_JUMP_LOOP, true);
+				// apply a jump acceleration to the character
+				mVerticalVelocity = JUMP_ACCEL;
+			}
+		}
+		else if (mBaseAnimID == ANIM_JUMP_END)
+		{
+			if (mTimer >= mAnims[mBaseAnimID]->getLength())
+			{
+				// safely landed, so go back to running or idling
+				if (mKeyDirection == Vector3::ZERO)
+				{
+					setBaseAnimation(ANIM_IDLE_BASE);
+					setTopAnimation(ANIM_IDLE_TOP);
+				}
+				else
+				{
+					setBaseAnimation(ANIM_RUN_BASE, true);
+					setTopAnimation(ANIM_RUN_TOP, true);
+				}
+			}
+		}
 
 		// increment the current base and top animation times
 		if (mBaseAnimID != ANIM_NONE) mAnims[mBaseAnimID]->addTime(deltaTime * baseAnimSpeed);
@@ -223,7 +397,7 @@ CharacterController::CharacterController(Camera* cam)
 		fadeAnimations(deltaTime);
 	}
 
-	void CharacterController::fadeAnimations(Real deltaTime)
+	void fadeAnimations(Real deltaTime)
 	{
 		for (int i = 0; i < NUM_ANIMS; i++)
 		{
@@ -248,7 +422,7 @@ CharacterController::CharacterController(Camera* cam)
 		}
 	}
 
-	void CharacterController::updateCamera(Real deltaTime)
+	void updateCamera(Real deltaTime)
 	{
 		// place the camera pivot roughly at the character's shoulder
 		mCameraPivot->setPosition(mBodyNode->getPosition() + Vector3::UNIT_Y * CAM_HEIGHT);
@@ -259,7 +433,7 @@ CharacterController::CharacterController(Camera* cam)
 		mCameraNode->lookAt(mCameraPivot->_getDerivedPosition(), Node::TS_WORLD);
 	}
 
-	void CharacterController::updateCameraGoal(Real deltaYaw, Real deltaPitch, Real deltaZoom)
+	void updateCameraGoal(Real deltaYaw, Real deltaPitch, Real deltaZoom)
 	{
 		mCameraPivot->yaw(Degree(deltaYaw), Node::TS_WORLD);
 
@@ -282,39 +456,8 @@ CharacterController::CharacterController(Camera* cam)
 		}
 	}
 
-
-
-	void CharacterController::setTopAnimation(AnimID id, bool reset)
+	void setBaseAnimation(AnimID id, bool reset = false)
 	{
-	    reset = false;
-		if (mTopAnimID >= 0 && mTopAnimID < NUM_ANIMS)
-		{
-			// if we have an old animation, fade it out
-			mFadingIn[mTopAnimID] = false;
-			mFadingOut[mTopAnimID] = true;
-		}
-
-		mTopAnimID = id;
-
-		if (id != ANIM_NONE)
-		{
-			// if we have a new animation, enable it and fade it in
-			mAnims[id]->setEnabled(true);
-			mAnims[id]->setWeight(0);
-			mFadingOut[id] = false;
-			mFadingIn[id] = true;
-			if (reset) mAnims[id]->setTimePosition(0);
-		}
-	}
-
-	void CharacterController::setRunSpeed(Real runSpeed)
-	{
-		mRunSpeed = runSpeed;
-	}
-
-	void CharacterController::setBaseAnimation(AnimID id, bool reset)
-	{
-	    reset = false;
 		if (mBaseAnimID >= 0 && mBaseAnimID < NUM_ANIMS)
 		{
 			// if we have an old animation, fade it out
@@ -335,9 +478,48 @@ CharacterController::CharacterController(Camera* cam)
 		}
 	}
 
-	void CharacterController::run()
+	void setTopAnimation(AnimID id, bool reset = false)
 	{
-        mKeyDirection.z = -1;
-        setBaseAnimation(ANIM_RUN_BASE, true);
+		if (mTopAnimID >= 0 && mTopAnimID < NUM_ANIMS)
+		{
+			// if we have an old animation, fade it out
+			mFadingIn[mTopAnimID] = false;
+			mFadingOut[mTopAnimID] = true;
+		}
+
+		mTopAnimID = id;
+
+		if (id != ANIM_NONE)
+		{
+			// if we have a new animation, enable it and fade it in
+			mAnims[id]->setEnabled(true);
+			mAnims[id]->setWeight(0);
+			mFadingOut[id] = false;
+			mFadingIn[id] = true;
+			if (reset) mAnims[id]->setTimePosition(0);
+		}
 	}
 
+	Camera* mCamera;
+	SceneNode* mBodyNode;
+	SceneNode* mCameraPivot;
+	SceneNode* mCameraGoal;
+	SceneNode* mCameraNode;
+	Real mPivotPitch;
+	Entity* mBodyEnt;
+	Entity* mSword1;
+	Entity* mSword2;
+	RibbonTrail* mSwordTrail;
+	AnimationState* mAnims[NUM_ANIMS];    // master animation list
+	AnimID mBaseAnimID;                   // current base (full- or lower-body) animation
+	AnimID mTopAnimID;                    // current top (upper-body) animation
+	bool mFadingIn[NUM_ANIMS];            // which animations are fading in
+	bool mFadingOut[NUM_ANIMS];           // which animations are fading out
+	bool mSwordsDrawn;
+	Vector3 mKeyDirection;      // player's local intended direction based on WASD keys
+	Vector3 mGoalDirection;     // actual intended direction in world-space
+	Real mVerticalVelocity;     // for jumping
+	Real mTimer;                // general timer to see how long animations have been playing
+};
+
+#endif

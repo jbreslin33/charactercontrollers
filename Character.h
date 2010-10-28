@@ -16,19 +16,15 @@ public:
     Character(Camera* cam);
     ~Character();
 
-	void setupBody();
+	void setupBodys(int numberOfBodys);
 
-protected:
+
 
 	Camera* mCamera;
 
 	std::vector<SceneNode*> mModelNodes;
 	std::vector<Entity*>    mBodyEnts;
 	std::vector<SceneNode*> mBodyNodes;
-	std::vector<std::string*> mNames;
-	std::vector<std::string*> mMeshes;
-
-
 
 };
 

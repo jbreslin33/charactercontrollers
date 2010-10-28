@@ -7,9 +7,9 @@ Character::Character(Camera* cam)
 	//setupBody(cam->getSceneManager());
 }
 
-	void Character::setupBody()
+	void Character::setupBodys(int numberOfBodys)
 	{
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < numberOfBodys; i++)
         {
             // create main model
             mBodyNodes.push_back(mCamera->getSceneManager()->getRootSceneNode()->createChildSceneNode(Vector3::UNIT_Y * CHAR_HEIGHT));
