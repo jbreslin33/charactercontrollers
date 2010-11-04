@@ -18,10 +18,10 @@ public:
 
 	void setupBodys(int numberOfBodys);
 
-
-
 	Camera* mCamera;
 
+    int mNumberOfBodys;
+    bool mBodysCreated;
 	std::vector<SceneNode*> mModelNodes;
 	std::vector<Entity*>    mBodyEnts;
 	std::vector<SceneNode*> mBodyNodes;

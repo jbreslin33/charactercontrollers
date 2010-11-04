@@ -3,12 +3,15 @@
 Character::Character(Camera* cam)
 {
     mCamera = cam;
-
+    mNumberOfBodys = 0;
+    mBodysCreated = false;
 	//setupBody(cam->getSceneManager());
 }
+Character::~Character() { }
 
 	void Character::setupBodys(int numberOfBodys)
 	{
+	    mNumberOfBodys = numberOfBodys;
         for (int i = 0; i < numberOfBodys; i++)
         {
             // create main model
