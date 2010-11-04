@@ -8,6 +8,8 @@
 
     void SkeletalAnimation::addTime(Real deltaTime)
     {
+        mAnimStates[1]->addTime(mAnimSpeeds[1] * deltaTime);
+        /*
         for (unsigned int i = 0; i < NUM_MODELS; i++)
         {
 			// update sneaking animation based on speed
@@ -15,9 +17,6 @@
 
 			if (mAnimStates[i]->getTimePosition() >= ANIM_CHOP)   // when it's time to loop...
 			{
-				/* We need reposition the scene node origin, since the animation includes translation.
-				Position is calculated from an offset to the end position, and rotation is calculated
-				from how much the animation turns the character. */
 
 				Quaternion rot(Degree(-60), Vector3::UNIT_Y);   // how much the animation turns the character
 
@@ -31,6 +30,7 @@
 				mAnimStates[i]->setTimePosition(0);   // reset animation time
 			}
         }
+        */
     }
 
 	void SkeletalAnimation::setupModels()
@@ -49,13 +49,13 @@
 			mModelNodes.push_back(sn);
 
 			// create and attach a jaiqua entity
-            ent = mSceneManager->createEntity("Jaiqua" + StringConverter::toString(i + 1), "Sinbad.mesh");
+            ent = mSceneManager->createEntity("Sinbad" + StringConverter::toString(i + 1), "Sinbad.mesh");
 			sn->attachObject(ent);
 
 			// enable the entity's sneaking animation at a random speed and loop it manually since translation is involved
 			as = ent->getAnimationState("Dance");
             as->setEnabled(true);
-			as->setLoop(false);
+			as->setLoop(true);
 			mAnimSpeeds.push_back(Math::RangeRandom(0.5, 1.5));
 			mAnimStates.push_back(as);
         }
