@@ -6,20 +6,22 @@
 #include "OIS.h"
 
 using namespace Ogre;
-using namespace OgreBites;
+//using namespace OgreBites;
 
 class SkeletalAnimation
 {
 public:
 
-	SkeletalAnimation();// : NUM_MODELS(6), ANIM_CHOP(8)
-    bool frameRenderingQueued(const FrameEvent& evt);
+	SkeletalAnimation(Ogre::SceneManager* mSceneMgr); // : NUM_MODELS(6), ANIM_CHOP(8)
+	~SkeletalAnimation();
+    void addTime(Real deltaTime);
 
 protected:
 
 	void setupContent();
 	void setupModels();
 	void cleanupContent();
+
 
 
 	const unsigned int NUM_MODELS;
@@ -31,6 +33,9 @@ protected:
 
 	Vector3 mSneakStartPos;
 	Vector3 mSneakEndPos;
+
+
+    Ogre::SceneManager* mSceneManager;
 };
 
 #endif

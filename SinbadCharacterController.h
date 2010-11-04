@@ -174,7 +174,8 @@ private:
 			mModelNodes.push_back(sn);
 
 			// create and attach a jaiqua entity
-            ent = sceneMgr->createEntity("Jaiqua" + StringConverter::toString(i + 1), "jaiqua.mesh");
+            ent = sceneMgr->createEntity("Jaiqua" + StringConverter::toString(i + 1), "jaiqua.
+            ");
 			sn->attachObject(ent);
 
 			// enable the entity's sneaking animation at a random speed and loop it manually since translation is involved
