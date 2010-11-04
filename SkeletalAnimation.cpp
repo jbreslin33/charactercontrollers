@@ -53,7 +53,7 @@
 			sn->attachObject(ent);
 
 			// enable the entity's sneaking animation at a random speed and loop it manually since translation is involved
-			as = ent->getAnimationState("IdleBase");
+			as = ent->getAnimationState("Dance");
             as->setEnabled(true);
 			as->setLoop(false);
 			mAnimSpeeds.push_back(Math::RangeRandom(0.5, 1.5));
