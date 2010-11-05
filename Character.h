@@ -1,31 +1,40 @@
-#ifndef __CHARACTER_H__
-#define __CHARACTER_H__
+#ifndef Character_H
+#define Character_H
+
 
 #include "Ogre.h"
 #include "OIS.h"
 
 using namespace Ogre;
-
-#define CHAR_HEIGHT 5          // height of character's center of mass above ground
+//using namespace OgreBites;
 
 class Character
 {
-
 public:
 
-    Character(Camera* cam);
-    ~Character();
+	Character(Ogre::SceneManager* mSceneMgr, std::string name,int xPos, int yPos); // : NUM_MODELS(6), ANIM_CHOP(8)
+	~Character();
+    void addTime(Real deltaTime);
 
-	void setupBodys(int numberOfBodys);
+protected:
 
-	Camera* mCamera;
+	void setupContent();
+	void setupModels();
+	void cleanupContent();
 
-    int mNumberOfBodys;
-    bool mBodysCreated;
-	std::vector<SceneNode*> mModelNodes;
-	std::vector<Entity*>    mBodyEnts;
-	std::vector<SceneNode*> mBodyNodes;
+	SceneNode* mModelNodes;
+	AnimationState* mAnimStates;
+	Real mAnimSpeeds;
 
+	Vector3 mSneakStartPos;
+	Vector3 mSneakEndPos;
+
+    std::string mName;
+    Ogre::SceneManager* mSceneManager;
+
+    int xPos;
+    int yPos;
 };
 
 #endif
+
