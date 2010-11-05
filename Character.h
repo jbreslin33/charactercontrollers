@@ -14,24 +14,24 @@ public:
 
 	Character(Ogre::SceneManager* mSceneMgr, std::string name,int xPos, int yPos); // : NUM_MODELS(6), ANIM_CHOP(8)
 	~Character();
+
     void addTime(Real deltaTime);
 
 protected:
 
-	void setupContent();
-	void setupModels();
+	void setupModel();
 	void cleanupContent();
 
+    //objects
+    Ogre::SceneManager* mSceneManager;
 	SceneNode* mModelNodes;
+
+    //Animation
 	AnimationState* mAnimStates;
 	Real mAnimSpeeds;
 
-	Vector3 mSneakStartPos;
-	Vector3 mSneakEndPos;
-
+    //stats
     std::string mName;
-    Ogre::SceneManager* mSceneManager;
-
     int xPos;
     int yPos;
 };
