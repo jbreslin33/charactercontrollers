@@ -12,15 +12,21 @@ class Character
 {
 public:
 
-	Character(Ogre::SceneManager* mSceneMgr, std::string name,int xPos, int yPos); // : NUM_MODELS(6), ANIM_CHOP(8)
+	Character(Ogre::SceneManager* mSceneMgr, std::string name,int xPos, int yPos, int zPos); // : NUM_MODELS(6), ANIM_CHOP(8)
 	~Character();
 
-    void addTime(Real deltaTime);
+    void addTime         (Real deltaTime);
+    void updateBody      (Real deltaTime);
+    void updateAnimations(Real deltaTime);
+    void updateCamera    (Real deltaTime);
+
 
 protected:
 
 	void setupModel();
 	void cleanupContent();
+
+
 
     //objects
     Ogre::SceneManager* mSceneManager;
@@ -34,6 +40,7 @@ protected:
     std::string mName;
     int xPos;
     int yPos;
+    int zPos;
 };
 
 #endif

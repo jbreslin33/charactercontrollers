@@ -1,13 +1,19 @@
 #include "Character.h"
 
-	Character::Character(Ogre::SceneManager* mSceneMgr, std::string name,int x, int y)
+	Character::Character(Ogre::SceneManager* mSceneMgr, std::string name,int x, int y, int z)
 	{
+	    //unique character name
 	    mName = name;
+
+	    //starting position
 	    xPos = x;
 	    yPos = y;
+	    zPos = z;
 
+        //the all powerful SceneManager
 	    mSceneManager = mSceneMgr;
 
+        //actually create and show the model on screen...assuming you put it somewhere visible etc.
         setupModel();
 	}
 
@@ -26,7 +32,7 @@
 		// create scene nodes for the models at regular angular intervals
 		sn = mSceneManager->getRootSceneNode()->createChildSceneNode();
 		//sn->yaw(Radian(Math::TWO_PI * (float)i / (float)NUM_MODELS));
-		sn->translate(xPos, yPos, -20, Node::TS_LOCAL);
+		sn->translate(xPos, yPos, zPos, Node::TS_LOCAL);
 		mModelNodes = sn;
 
 		// create and attach a jaiqua entity
@@ -41,6 +47,19 @@
 		mAnimStates = as;
 
 	}
+
+    void Character::updateBody      (Real deltaTime)
+    {
+
+    }
+    void Character::updateAnimations(Real deltaTime)
+    {
+
+    }
+    void Character::updateCamera    (Real deltaTime)
+    {
+
+    }
 
 	void Character::cleanupContent()
 	{
