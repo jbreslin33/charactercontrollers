@@ -12,7 +12,7 @@ class Character
 {
 public:
 
-	Character(Ogre::SceneManager* mSceneMgr, std::string name,int xPos, int yPos, int zPos); // : NUM_MODELS(6), ANIM_CHOP(8)
+	Character(Ogre::SceneManager* mSceneMgr, std::string name, std::string mesh, std::string animation, int xPos, int yPos, int zPos); // : NUM_MODELS(6), ANIM_CHOP(8)
 	~Character();
 
     void addTime         (Real deltaTime);
@@ -38,6 +38,8 @@ protected:
 
     //stats
     std::string mName;
+    std::string mMesh;
+    std::string mAnimation;
     int xPos;
     int yPos;
     int zPos;

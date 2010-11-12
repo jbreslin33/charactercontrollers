@@ -1,9 +1,11 @@
 #include "Character.h"
 
-	Character::Character(Ogre::SceneManager* mSceneMgr, std::string name,int x, int y, int z)
+	Character::Character(Ogre::SceneManager* mSceneMgr, std::string name,std::string mesh, std::string animation, int x, int y, int z)
 	{
-	    //unique character name
-	    mName = name;
+	    //character traits
+	    mName      = name;
+	    mMesh      = mesh;
+	    mAnimation = animation;
 
 	    //starting position
 	    xPos = x;
@@ -36,11 +38,11 @@
 		mModelNodes = sn;
 
 		// create and attach a jaiqua entity
-        ent = mSceneManager->createEntity(mName, "Sinbad.mesh");
+        ent = mSceneManager->createEntity(mName, mMesh);
 		sn->attachObject(ent);
 
 		// enable the entity's sneaking animation at a random speed and loop it manually since translation is involved
-		as = ent->getAnimationState("Dance");
+		as = ent->getAnimationState(mAnimation);
         as->setEnabled(true);
         as->setLoop(true);
 		mAnimSpeeds = Math::RangeRandom(0.5, 1.5);
